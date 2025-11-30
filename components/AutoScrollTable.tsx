@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 
 export interface Column<T> {
@@ -68,18 +67,16 @@ export const AutoScrollTable = <T,>({
   return (
     <div 
       className={`flex flex-col border border-slate-700/50 rounded-lg bg-slate-800/40 backdrop-blur-md shadow-lg overflow-hidden ${height} ring-1 ring-cyan-500/20`}
-      // Move hover detection to the ROOT container
-      // This ensures that as soon as the user interacts with ANY part of the table (including scrollbar), 
-      // the auto-scroll stops and doesn't fight the mouse wheel.
+      // Standard mouse events for pause on hover
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 
         Horizontal Scroll Wrapper.
-        If minWidth is provided, this container allows horizontal scrolling 
-        while the inner container enforces the width.
+        FORCED overflow-x-hidden here to strictly adhere to "Dashboard" view (no scrollbars).
+        If content is too wide, it must truncate.
       */}
-      <div className="overflow-x-auto h-full w-full custom-scrollbar">
+      <div className="overflow-x-hidden h-full w-full">
         <div 
           className="flex flex-col h-full" 
           style={{ minWidth: minWidth || '100%' }}
@@ -89,7 +86,7 @@ export const AutoScrollTable = <T,>({
             {columns.map((col, idx) => (
               <div
                 key={idx}
-                className={`p-3 truncate ${col.width || 'flex-1'} ${col.className || ''}`}
+                className={`p-1.5 lg:p-3 truncate ${col.width || 'flex-1'} ${col.className || ''}`}
               >
                 {col.header}
               </div>
@@ -105,13 +102,13 @@ export const AutoScrollTable = <T,>({
               {displayData.map((item, index) => (
                 <div
                   key={index}
-                  className={`flex border-b border-slate-700/30 text-xs text-slate-300 hover:bg-cyan-900/20 transition-colors`}
+                  className={`flex border-b border-slate-700/30 text-xs text-slate-300 hover:bg-cyan-900/20 transition-colors items-center`}
                   style={{ height: `${rowHeight}px` }}
                 >
                   {columns.map((col, colIdx) => (
                     <div
                       key={colIdx}
-                      className={`px-3 truncate flex items-center ${col.width || 'flex-1'} ${col.className || ''}`}
+                      className={`px-1.5 lg:px-3 truncate flex items-center ${col.width || 'flex-1'} ${col.className || ''}`}
                     >
                       {col.accessor(item)}
                     </div>
