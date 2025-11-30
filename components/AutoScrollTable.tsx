@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 
 export interface Column<T> {
@@ -33,8 +34,9 @@ export const AutoScrollTable = <T,>({
     if (!scrollContainer) return;
 
     const animate = () => {
+      // Only scroll if NOT hovered and we have a container
       if (!isHovered && scrollContainer) {
-        // Read current scroll position directly from the element
+        // Read current scroll position
         let currentScroll = scrollContainer.scrollTop;
         let newScroll = currentScroll + speed;
         
@@ -42,9 +44,9 @@ export const AutoScrollTable = <T,>({
         const halfHeight = scrollContainer.scrollHeight / 2;
 
         // Reset if we've scrolled past the first set
+        // Use a small buffer to ensure smooth looping
         if (newScroll >= halfHeight) {
-          // Adjust position to the start of the second set (which is identical to start of first)
-          // seamlessly by subtracting the height of one set
+          // Wrap around seamlessly
           newScroll = newScroll - halfHeight;
         }
 
@@ -64,7 +66,14 @@ export const AutoScrollTable = <T,>({
   const displayData = [...data, ...data];
 
   return (
-    <div className="flex flex-col border border-slate-700/50 rounded-lg bg-slate-800/40 backdrop-blur-md shadow-lg overflow-hidden h-full ring-1 ring-cyan-500/20">
+    <div 
+      className={`flex flex-col border border-slate-700/50 rounded-lg bg-slate-800/40 backdrop-blur-md shadow-lg overflow-hidden ${height} ring-1 ring-cyan-500/20`}
+      // Move hover detection to the ROOT container
+      // This ensures that as soon as the user interacts with ANY part of the table (including scrollbar), 
+      // the auto-scroll stops and doesn't fight the mouse wheel.
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* 
         Horizontal Scroll Wrapper.
         If minWidth is provided, this container allows horizontal scrolling 
@@ -90,9 +99,7 @@ export const AutoScrollTable = <T,>({
           {/* Scrolling Body (Vertical only) */}
           <div
             ref={scrollRef}
-            className={`${height} overflow-y-auto relative custom-scrollbar flex-1`}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="overflow-y-auto relative custom-scrollbar flex-1"
           >
             <div className="w-full">
               {displayData.map((item, index) => (

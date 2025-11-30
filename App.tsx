@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AutoScrollTable } from './components/AutoScrollTable';
 import { ResourceChart } from './components/ResourceChart';
 import { RegistrationModal } from './components/RegistrationModal';
 import { supabase } from './supabaseClient';
 import { RegionStat, Customer, ChartDataPoint, FormData } from './types';
 import { MOCK_CUSTOMERS } from './constants';
+import { Plus } from 'lucide-react';
 
 // Helper for masking name: 张三 -> 张**
 const maskName = (name: string) => {
@@ -31,11 +32,7 @@ function App() {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
   // --- Data Aggregation Logic ---
-  // This calculates the Table and Chart data whenever 'customers' changes
   useEffect(() => {
-    // If we have no customers (and not loading), we might show empty stats
-    // But usually if customers is populated (either from DB or Mock), this runs.
-    
     if (customers.length === 0) {
       setRegionStats([]);
       setChartData([]);
@@ -72,7 +69,6 @@ function App() {
       } else if (type.includes('充电')) {
         entry.ev_mw += cap;
       } else {
-        // 包括 '空调', '负荷', '其他' 以及所有未匹配类型，全部归为其他
         entry.other_mw += cap;
       }
     });
@@ -81,7 +77,7 @@ function App() {
     const newRegionStats: RegionStat[] = Array.from(cityMap.entries()).map(([city, data]) => ({
       city,
       ...data
-    })).sort((a, b) => b.total_mw - a.total_mw); // Sort by total capacity
+    })).sort((a, b) => b.total_mw - a.total_mw);
 
     // 3. Convert to ChartDataPoint Array
     const newChartData: ChartDataPoint[] = Array.from(cityMap.entries()).map(([city, data]) => ({
@@ -107,7 +103,7 @@ function App() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('customers')
+        .from('vpp_customers_netlify')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -129,7 +125,6 @@ function App() {
           }));
           setCustomers(mappedCustomers);
         } else {
-          // If DB is empty, also use Mock Data so the user sees something
           console.log('Supabase returned empty, using mock data for demo.');
           setCustomers(MOCK_CUSTOMERS);
         }
@@ -148,12 +143,10 @@ function App() {
       ? `其他-${data.demandTypeOther}` 
       : data.demandType;
 
-    // 1. Prepare Payload
     const dbPayload = {
       company_name: data.companyName,
       province: data.province,
       city: data.city,
-      // district removed
       address: data.address,
       capacity_mw: capacity,
       demand_type: demandTypeString,
@@ -163,10 +156,9 @@ function App() {
       contact_email: data.contactEmail
     };
 
-    // 2. Try Insert into DB
     try {
         const { error } = await supabase
-        .from('customers')
+        .from('vpp_customers_netlify')
         .insert([dbPayload]);
 
         if (error) {
@@ -174,7 +166,6 @@ function App() {
             updateLocalState(dbPayload);
             alert('注意：由于数据库连接未配置或失败，数据仅在当前会话保存。');
         } else {
-            // 3. Refetch to update UI
             await fetchCustomers();
         }
     } catch (e) {
@@ -184,7 +175,6 @@ function App() {
     }
   };
 
-  // Fallback for local update if DB fails
   const updateLocalState = (payload: any) => {
       const newCustomer: Customer = {
           id: Math.random().toString(),
@@ -201,150 +191,145 @@ function App() {
   };
 
   return (
-    // Root Container: Using min-h-screen and overflow-auto to allow scrolling
-    <div className="min-h-screen tech-bg font-sans text-gray-200 flex flex-col relative overflow-auto">
+    // MAIN LAYOUT
+    // Mobile: h-screen allows body scroll (via overflow-hidden on root + overflow-y-auto on main) if needed, 
+    // but usually we want the root to catch the scroll. 
+    // Desktop (lg): Locked height, internal scrolling only.
+    <div className="h-screen w-screen bg-[#0f172a] text-gray-200 flex flex-col overflow-hidden relative font-sans">
       
-      {/* Decorative Grid Overlay - Fixed position so it stays during scroll */}
-      <div className="fixed inset-0 perspective-container pointer-events-none z-0 overflow-hidden">
+      {/* Decorative Grid Overlay */}
+      <div className="absolute inset-0 perspective-container pointer-events-none z-0 overflow-hidden">
         <div className="cyber-floor"></div>
         <div className="ambient-glow"></div>
       </div>
-      
-      <div className="fixed inset-0 pointer-events-none z-0 scanline"></div>
+      <div className="absolute inset-0 pointer-events-none z-0 scanline"></div>
 
-      {/* 
-         Content Wrapper:
-         Removed min-w-[1280px] to allow responsive resizing on mobile.
-         Added padding adjustment for mobile vs desktop.
-      */}
-      <div className="flex flex-col flex-1 relative z-10 p-4 lg:p-6 min-h-screen">
-        
-        {/* Header */}
-        <header className="relative py-4 text-center border-b border-cyan-500/20 bg-slate-900/60 shrink-0 backdrop-blur-sm shadow-[0_4px_20px_-5px_rgba(8,145,178,0.3)] mb-6">
-          <h1 className="text-xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase">
+      {/* HEADER */}
+      <header className="relative z-20 flex items-center justify-between px-4 lg:px-6 py-3 lg:py-4 border-b border-cyan-500/20 bg-slate-900/80 backdrop-blur-md shadow-[0_4px_20px_-5px_rgba(8,145,178,0.3)] shrink-0">
+        <div className="flex flex-col">
+           <h1 className="text-lg lg:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase">
             虚拟电厂资源整合平台
           </h1>
-          <div className="w-full h-[1px] mt-4 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-          <div className="w-32 h-[2px] mx-auto bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></div>
-        </header>
+          <div className="w-16 lg:w-24 h-[2px] bg-cyan-400 shadow-[0_0_8px_#22d3ee] mt-1"></div>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="group relative flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-1.5 px-3 lg:px-4 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-all hover:scale-105 border border-red-400/30 text-sm lg:text-base"
+        >
+          <span className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-sm" />
+          <Plus size={16} className="text-white lg:w-[18px] lg:h-[18px]" />
+          <span>登记资源</span>
+        </button>
+      </header>
 
-        {/* Main Layout Grid: Single column on mobile, 12 columns on desktop */}
-        <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* DASHBOARD CONTENT */}
+      {/* 
+        Responsive Strategy:
+        Mobile: overflow-y-auto allows the whole dashboard to scroll vertically.
+        Desktop (lg): overflow-hidden locks the main container, forcing internal widgets to scroll.
+      */}
+      <main className="relative z-10 flex-1 w-full p-4 lg:p-6 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row gap-4 lg:gap-6">
+        
+        {/* LEFT COLUMN: Top Table + Bottom Chart */}
+        {/* Mobile: Full width. Desktop: 65% width. */}
+        <div className="w-full lg:w-[65%] flex flex-col gap-4 lg:gap-6 shrink-0 lg:h-full">
           
-          {/* LEFT COLUMN: Demand Table + Resource Chart */}
-          <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
-            
-            {/* Top Left: Regional Demand Stats */}
-            <div className="flex flex-col h-[300px]">
-              <div className="flex items-center gap-2 mb-2 shrink-0">
-                <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_5px_#22d3ee]"></div>
-                <h2 className="text-lg font-bold text-cyan-100 tracking-wide text-shadow">各地需求量统计</h2>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <AutoScrollTable
-                  data={regionStats}
-                  height="h-full"
-                  rowHeight={40}
-                  minWidth="600px" // Ensure horizontal scroll on mobile
-                  columns={[
-                    { header: '城市', accessor: (d: RegionStat) => <span className="font-medium text-cyan-200">{d.city}</span>, className: 'flex-1' },
-                    { header: '站点(个)', accessor: (d: RegionStat) => <span className="text-white">{d.site_count}</span>, className: 'flex-1' },
-                    { header: '光伏(MW)', accessor: (d: RegionStat) => <span className="text-indigo-300">{d.pv_mw.toFixed(1)}</span>, className: 'flex-1' },
-                    { header: '储能(MW)', accessor: (d: RegionStat) => <span className="text-green-300">{d.storage_mw.toFixed(1)}</span>, className: 'flex-1' },
-                    { header: '充电(MW)', accessor: (d: RegionStat) => <span className="text-yellow-300">{d.ev_mw.toFixed(1)}</span>, className: 'flex-1' },
-                    { header: '合计(MW)', accessor: (d: RegionStat) => <span className="font-bold text-cyan-400">{d.total_mw.toFixed(1)}</span>, className: 'flex-1' },
-                  ]}
-                />
-              </div>
-            </div>
-
-            {/* Bottom Left: Resource Chart */}
-            <div className="flex flex-col h-[300px]">
-               <ResourceChart data={chartData} />
-            </div>
-
-          </div>
-
-          {/* RIGHT COLUMN: Customer List */}
-          <div className="col-span-1 lg:col-span-4 flex flex-col h-[500px] lg:h-[624px]">
+          {/* TOP TABLE AREA */}
+          {/* Mobile: Fixed Height (350px) so it's readable. Desktop: Flex-1 (Fill remaining space). */}
+          <div className="h-[350px] lg:h-auto lg:flex-1 min-h-0 flex flex-col bg-slate-800/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="w-2 h-2 bg-purple-400 rotate-45 shadow-[0_0_5px_#a855f7]"></div>
-              <h2 className="text-lg font-bold text-cyan-100 tracking-wide">客户列表</h2>
+              <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_5px_#22d3ee]"></div>
+              <h2 className="text-base lg:text-lg font-bold text-cyan-100 tracking-wide text-shadow">各地需求量统计</h2>
             </div>
-            <div className="flex-1 overflow-hidden"> 
+            
+            <div className="flex-1 overflow-hidden relative shadow-lg rounded-lg h-full">
               <AutoScrollTable
-                data={customers}
+                data={regionStats}
                 height="h-full"
-                rowHeight={42}
-                minWidth="1000px" // Always horizontal scroll on mobile for detailed view
+                minWidth="550px"
                 columns={[
-                  { 
-                    header: '企业名称', 
-                    accessor: (d: Customer) => <span className="font-medium text-slate-200 truncate block hover:text-cyan-300 transition-colors" title={d.company_name}>{d.company_name}</span>, 
-                    className: 'min-w-[180px] flex-1' 
-                  },
-                  { 
-                    header: '省份', 
-                    accessor: (d: Customer) => d.province, 
-                    className: 'min-w-[60px] flex-1 text-slate-400' 
-                  },
-                  { 
-                    header: '城市', 
-                    accessor: (d: Customer) => d.city, 
-                    className: 'min-w-[60px] flex-1 text-slate-400' 
-                  },
-                  { 
-                    header: '容量(MW)', 
-                    accessor: (d: Customer) => <span className="text-cyan-400 font-bold">{d.capacity_mw}</span>, 
-                    className: 'min-w-[80px] flex-1' 
-                  },
-                  { 
-                    header: '需求类型', 
-                    accessor: (d: Customer) => (
-                      <span className={`px-2 py-0.5 rounded-sm text-xs border whitespace-nowrap ${
-                        d.demand_type.includes('光伏') 
-                          ? 'bg-orange-500/10 text-orange-300 border-orange-500/30' 
-                          : 'bg-blue-500/10 text-blue-300 border-blue-500/30'
-                      }`}>
-                        {d.demand_type}
-                      </span>
-                    ), 
-                    className: 'min-w-[100px] flex-1' 
-                  },
-                  { 
-                    header: '行业', 
-                    accessor: (d: Customer) => <span className="text-slate-300">{d.industry}</span>, 
-                    className: 'min-w-[100px] flex-1' 
-                  },
-                  { 
-                    header: '联系人', 
-                    accessor: (d: Customer) => maskName(d.contact), 
-                    className: 'min-w-[80px] flex-1 text-slate-400' 
-                  },
-                  { 
-                    header: '电话', 
-                    accessor: (d: Customer) => maskPhone(d.phone), 
-                    className: 'min-w-[120px] flex-1 text-slate-400 font-mono' 
-                  },
+                  { header: '城市', accessor: (d: RegionStat) => <span className="font-medium text-cyan-200">{d.city}</span>, className: 'flex-1' },
+                  { header: '站点', accessor: (d: RegionStat) => <span className="text-white">{d.site_count}</span>, className: 'w-16' },
+                  { header: '光伏', accessor: (d: RegionStat) => <span className="text-indigo-300">{d.pv_mw.toFixed(1)}</span>, className: 'flex-1' },
+                  { header: '储能', accessor: (d: RegionStat) => <span className="text-green-300">{d.storage_mw.toFixed(1)}</span>, className: 'flex-1' },
+                  { header: '充电', accessor: (d: RegionStat) => <span className="text-yellow-300">{d.ev_mw.toFixed(1)}</span>, className: 'flex-1' },
+                  { header: '合计', accessor: (d: RegionStat) => <span className="font-bold text-cyan-400">{d.total_mw.toFixed(1)}</span>, className: 'flex-1' },
                 ]}
               />
             </div>
           </div>
 
-        </main>
+          {/* BOTTOM CHART AREA */}
+          {/* Mobile: Fixed Height (250px). Desktop: Fixed Height (320px). */}
+          <div className="h-[250px] lg:h-80 shrink-0 flex flex-col">
+             <ResourceChart data={chartData} />
+          </div>
 
-        {/* Bottom Section: Registration Trigger */}
-        <div className="mt-8 pt-4 pb-12 text-center shrink-0">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="group relative bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3 px-16 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.4)] transform transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(239,68,68,0.6)] flex items-center justify-center mx-auto gap-3 text-lg border border-red-400/50"
-          >
-             <span className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md animate-pulse" />
-            <span className="text-2xl leading-none mb-1">+</span> 登记我的资源
-          </button>
         </div>
 
-      </div>
+        {/* RIGHT COLUMN: Customer List */}
+        {/* Mobile: Full width, Fixed Height (500px). Desktop: 35% width, Full Height. */}
+        <div className="w-full lg:w-[35%] h-[500px] lg:h-full flex flex-col min-h-0">
+          <div className="flex items-center gap-2 mb-2 shrink-0">
+            <div className="w-2 h-2 bg-purple-400 rotate-45 shadow-[0_0_5px_#a855f7]"></div>
+            <h2 className="text-base lg:text-lg font-bold text-cyan-100 tracking-wide">客户列表</h2>
+          </div>
+          <div className="flex-1 overflow-hidden relative shadow-lg rounded-lg h-full"> 
+            <AutoScrollTable
+              data={customers}
+              height="h-full"
+              rowHeight={45}
+              minWidth="600px" 
+              columns={[
+                { 
+                  header: '企业名称', 
+                  accessor: (d: Customer) => <span className="font-medium text-slate-200 truncate block hover:text-cyan-300 transition-colors" title={d.company_name}>{d.company_name}</span>, 
+                  className: 'w-28 lg:w-32 flex-[2]' 
+                },
+                { 
+                  header: '城市', 
+                  accessor: (d: Customer) => d.city, 
+                  className: 'w-12 lg:w-14 text-slate-400' 
+                },
+                { 
+                  header: '容量', 
+                  accessor: (d: Customer) => <span className="text-cyan-400 font-bold">{d.capacity_mw}</span>, 
+                  className: 'w-12 lg:w-14' 
+                },
+                { 
+                  header: '类型', 
+                  accessor: (d: Customer) => (
+                    <span className={`px-1 lg:px-1.5 py-0.5 rounded-sm text-[10px] border whitespace-nowrap ${
+                      d.demand_type.includes('光伏') 
+                        ? 'bg-orange-500/10 text-orange-300 border-orange-500/30' 
+                        : 'bg-blue-500/10 text-blue-300 border-blue-500/30'
+                    }`}>
+                      {d.demand_type}
+                    </span>
+                  ), 
+                  className: 'w-14 lg:w-16' 
+                },
+                { 
+                  header: '行业', 
+                  accessor: (d: Customer) => <span className="text-slate-400 truncate" title={d.industry}>{d.industry}</span>, 
+                  className: 'w-16 lg:w-20' 
+                },
+                { 
+                  header: '联系人', 
+                  accessor: (d: Customer) => maskName(d.contact), 
+                  className: 'w-14 lg:w-16 text-slate-400' 
+                },
+                { 
+                  header: '电话', 
+                  accessor: (d: Customer) => maskPhone(d.phone), 
+                  className: 'w-20 lg:w-24 text-slate-400 font-mono text-[10px]' 
+                },
+              ]}
+            />
+          </div>
+        </div>
+
+      </main>
 
       {/* Registration Modal */}
       <RegistrationModal 

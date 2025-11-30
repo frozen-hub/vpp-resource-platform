@@ -1,13 +1,33 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Safe access to environment variables
-const env = (import.meta as any).env || {};
+// Function to safely retrieve environment variables
+// In Netlify (using Vite), variables must start with VITE_ to be exposed to the client.
+const getEnvVar = (key: string) => {
+  // 1. Check import.meta.env (Standard Vite)
+  if (import.meta && (import.meta as any).env && (import.meta as any).env[key]) {
+    return (import.meta as any).env[key];
+  }
+  // 2. Check process.env (Fallback for other build systems)
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key];
+  }
+  return '';
+};
 
-// 请将这些替换为您在 Supabase 设置中获取的实际 URL 和 Anon Key
-// 如果没有设置环境变量，这里使用一个格式正确的占位符 URL 以防止应用启动崩溃
-// The URL must start with https://
-const supabaseUrl = env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+// Retrieve the variables
+// Make sure to add these in your Netlify "Environment variables" settings
+// SECURITY NOTE: 
+// It is SAFE and expected to expose the ANON_KEY to the client (browser),
+// PROVIDED YOU HAVE ENABLED Row Level Security (RLS) on your Supabase database tables.
+// WARNING: NEVER expose the SERVICE_ROLE_KEY (admin key) in client-side code.
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+const supabaseKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Validation to prevent crash on initialization
+// If variables are missing, we use a placeholder to allow the app to load
+// (The API calls will fail, which App.tsx handles by showing mock data)
+const validUrl = supabaseUrl && supabaseUrl.startsWith('http') ? supabaseUrl : 'https://placeholder.supabase.co';
+const validKey = supabaseKey ? supabaseKey : 'placeholder-key';
+
+export const supabase = createClient(validUrl, validKey);
