@@ -209,8 +209,8 @@ function App() {
       {/* Increased height from h-10 to h-14 for mobile visibility */}
       <header className="relative z-20 flex items-center justify-between px-3 lg:px-6 py-1 lg:py-4 border-b border-cyan-500/20 bg-slate-900/80 backdrop-blur-md shadow-[0_4px_20px_-5px_rgba(8,145,178,0.3)] shrink-0 h-14 lg:h-auto">
         <div className="flex flex-col justify-center">
-           {/* Increased text size slightly on mobile */}
-           <h1 className="text-xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase truncate max-w-[220px] lg:max-w-none">
+           {/* REDUCED MOBILE FONT SIZE: text-lg instead of text-xl to prevent truncation */}
+           <h1 className="text-lg lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase truncate max-w-[220px] lg:max-w-none">
             虚拟电厂资源整合平台
           </h1>
         </div>
@@ -243,7 +243,8 @@ function App() {
           <div className="flex-1 flex flex-col bg-slate-800/20 rounded-lg overflow-hidden min-h-0">
             <div className="flex items-center gap-2 mb-0.5 lg:mb-2 shrink-0 px-1 pt-1">
               <div className="w-1 h-1 lg:w-2 lg:h-2 bg-cyan-400 rotate-45 shadow-[0_0_5px_#22d3ee]"></div>
-              <h2 className="text-sm lg:text-lg font-bold text-cyan-100 tracking-wide text-shadow">各地需求量统计</h2>
+              {/* REDUCED MOBILE FONT SIZE: text-xs instead of text-sm */}
+              <h2 className="text-xs lg:text-lg font-bold text-cyan-100 tracking-wide text-shadow">各地需求量统计</h2>
             </div>
             
             <div className="flex-1 overflow-hidden relative shadow-lg rounded-lg h-full">
@@ -277,7 +278,8 @@ function App() {
         <div className="w-full lg:w-[35%] flex flex-col h-full lg:h-full flex-1 min-h-0">
           <div className="flex items-center gap-2 mb-0.5 lg:mb-2 shrink-0 px-1">
             <div className="w-1 h-1 lg:w-2 lg:h-2 bg-purple-400 rotate-45 shadow-[0_0_5px_#a855f7]"></div>
-            <h2 className="text-sm lg:text-lg font-bold text-cyan-100 tracking-wide">客户列表</h2>
+            {/* REDUCED MOBILE FONT SIZE: text-xs instead of text-sm */}
+            <h2 className="text-xs lg:text-lg font-bold text-cyan-100 tracking-wide">客户列表</h2>
           </div>
           <div className="flex-1 overflow-hidden relative shadow-lg rounded-lg h-full min-h-0"> 
             <AutoScrollTable

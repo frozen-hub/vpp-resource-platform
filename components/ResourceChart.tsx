@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   BarChart,
@@ -70,7 +71,8 @@ export const ResourceChart: React.FC<ResourceChartProps> = ({ data }) => {
       <div className="tech-corner tech-corner-br" />
 
       {/* Header */}
-      <h3 className="text-cyan-100 font-bold ml-3 mt-2 text-sm lg:text-lg tracking-wide flex items-center gap-2 shrink-0">
+      {/* REDUCED MOBILE FONT SIZE: text-xs instead of text-sm */}
+      <h3 className="text-cyan-100 font-bold ml-3 mt-2 text-xs lg:text-lg tracking-wide flex items-center gap-2 shrink-0">
         <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]"></span>
         已登记资源统计趋势
       </h3>
