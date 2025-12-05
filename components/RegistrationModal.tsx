@@ -132,10 +132,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
             {/* Detailed Address */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">详细地址</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">详细地址 <span className="text-red-400">*</span></label>
               <textarea
                 name="address"
                 rows={2}
+                required
                 value={formData.address}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -196,7 +197,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
             {/* Available Time (Custom Range Picker) */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">可响应时段</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">可响应时段 <span className="text-red-400">*</span></label>
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <input
@@ -226,10 +227,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
             {/* Industry Type */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">行业类型 (工业园区/商场/写字楼等)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">行业类型 (工业园区/商场/写字楼等) <span className="text-red-400">*</span></label>
               <input
                 type="text"
                 name="industryType"
+                required
                 value={formData.industryType}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -238,30 +240,33 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
             {/* Contact Info */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">联系人</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">联系人 <span className="text-red-400">*</span></label>
               <input
                 type="text"
                 name="contactName"
+                required
                 value={formData.contactName}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">联系电话</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">联系电话 <span className="text-red-400">*</span></label>
               <input
                 type="tel"
                 name="contactPhone"
+                required
                 value={formData.contactPhone}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">联系邮箱</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">联系邮箱 <span className="text-red-400">*</span></label>
               <input
                 type="email"
                 name="contactEmail"
+                required
                 value={formData.contactEmail}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500"

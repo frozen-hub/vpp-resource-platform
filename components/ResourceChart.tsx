@@ -24,7 +24,7 @@ export const ResourceChart: React.FC<ResourceChartProps> = ({ data }) => {
   
   // 1 = Right, -1 = Left
   const directionRef = useRef<number>(1);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
 
   const displayData = data;
   const totalWidth = Math.max(displayData.length * ITEM_WIDTH, 600); 

@@ -208,8 +208,8 @@ function App() {
       {/* Increased height from h-10 to h-14 for mobile visibility */}
       <header className="relative z-20 flex items-center justify-between px-3 lg:px-6 py-1 lg:py-4 border-b border-cyan-500/20 bg-slate-900/80 backdrop-blur-md shadow-[0_4px_20px_-5px_rgba(8,145,178,0.3)] shrink-0 h-14 lg:h-auto">
         <div className="flex flex-col justify-center">
-           {/* REDUCED MOBILE FONT SIZE: text-sm instead of text-lg to prevent truncation */}
-           <h1 className="text-sm lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase truncate max-w-[220px] lg:max-w-none">
+           {/* REDUCED MOBILE FONT SIZE: text-xs instead of text-sm to prevent truncation */}
+           <h1 className="text-xs lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase truncate max-w-[220px] lg:max-w-none">
             虚拟电厂资源整合平台
           </h1>
         </div>
